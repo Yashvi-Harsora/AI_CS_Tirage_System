@@ -1,265 +1,254 @@
-# 🤖 TriageAI – Intelligent Customer Support Ticket Triage System
+📁 Backend Folder Structure
+backend/
+│
+├── config/
+│ ├── index.js # Environment configuration
+│
+├── controllers/
+│ └── triageController.js # API request handlers
+│
+├── middleware/
+│ ├── cors.js # CORS configuration
+│ ├── errorHandler.js # Centralized error handling
+│ └── validateRequest.js # HTTP validation
+│
+├── pipeline/
+│ ├── stages/
+│ │ ├── inputValidation.js
+│ │ ├── normalizeMessage.js
+│ │ ├── aiAnalysis.js
+│ │ ├── validateAIResponse.js
+│ │ └── businessRules.js
+│ │
+│ └── triagePipeline.js # Pipeline orchestrator
+│
+├── prompts/
+│ └── triagePrompt.js # Gemini prompt builder
+│
+├── routes/
+│ └── triageRoutes.js
+│
+├── services/
+│ └── geminiService.js # Google Gemini integration
+│
+├── utils/
+│ ├── logger.js
+│ └── AppError.js
+│
+├── server.js
+└── package.json
+🏛 Architectural Decisions
+Why Pipe-and-Filter instead of MVC?
 
-TriageAI is an AI-powered customer support triage system that automatically analyzes customer messages, classifies issues, assigns priorities, detects sentiment, recommends actions, and determines when human intervention is required.
+This project intentionally follows a Pipe-and-Filter Architecture instead of MVC because the application behaves as a processing pipeline rather than a CRUD application.
 
-The project combines Large Language Models (Google Gemini) with deterministic business rules using a Pipe-and-Filter architecture to build a reliable and explainable AI system.
+Unlike traditional MVC systems:
 
----
+No persistent database is required.
+No Models are needed.
+No server-side Views are rendered.
+Each request is processed independently and returned immediately.
 
-# 🚀 Features
+Every customer message passes through multiple independent processing stages before the final response is generated.
 
-- AI-powered customer message analysis
-- Automatic issue categorization
-- Priority scoring (0–100)
-- Sentiment analysis
-- Department routing
-- SLA target assignment
-- Human escalation detection
-- Prompt injection detection
-- Business rule engine
-- Structured JSON responses
-- Modern React Dashboard
-- Single & Bulk Message Analysis
-
----
-
-# 🏗 Architecture
-
-The application follows a **Pipe-and-Filter Architecture** where each stage has a single responsibility.
-
-```
-Client Request
-      │
-      ▼
+Customer Message
+│
+▼
 Input Validation
-      │
-      ▼
-Normalization
-      │
-      ▼
+│
+▼
+Message Normalization
+│
+▼
 Prompt Builder
-      │
-      ▼
-Gemini AI Analysis
-      │
-      ▼
+│
+▼
+Google Gemini AI
+│
+▼
 Response Validation
-      │
-      ▼
-Business Rules Engine
-      │
-      ▼
-Final Response
-```
+│
+▼
+Business Rule Engine
+│
+▼
+Final JSON Response
 
----
+This design improves:
 
-# 🧠 AI Workflow
+Maintainability
+Scalability
+Debugging
+Reusability
+Explainability
+🤖 AI Decision Process
+AI Model
 
-1. Customer submits a message.
-2. Backend validates input.
-3. Prompt is generated dynamically.
-4. Gemini analyzes the message.
-5. JSON response is validated.
-6. Business Rules modify the AI output.
-7. Final triage report is returned.
+Google Gemini 2.0 Flash
 
----
+The LLM is responsible only for understanding customer messages.
 
-# ⚙ Business Rules
+It performs:
 
-The AI output is enhanced using deterministic business rules.
+Intent Understanding
+Category Classification
+Priority Prediction
+Sentiment Analysis
+Entity Extraction
+Action Recommendation
+
+Business decisions are intentionally not left entirely to AI.
+
+🧠 Prompt Engineering Strategy
+
+The prompt instructs Gemini to always return structured JSON.
+
+It contains:
+
+Category rules
+Priority guidelines
+Sentiment definitions
+Confidence guidelines
+Entity extraction rules
+Strict output format
+Hallucination prevention rules
+
+Customer messages are wrapped inside dedicated tags:
+
+<CUSTOMER_MESSAGE>
+...
+</CUSTOMER_MESSAGE>
+
+This helps separate user content from system instructions and reduces prompt injection risks.
+
+⚙ Business Rule Engine
+
+After AI generates its response, deterministic business rules are applied.
 
 Implemented Rules:
 
-- Critical issues → Auto escalation
-- Angry Billing Customer → Churn Risk Detection
-- SLA Assignment
-- Department Routing
-- Low Confidence Detection
-- Human Escalation
-- Prompt Injection Detection
-- Multi-Issue Detection
+Rule 1
 
----
+Critical Priority
 
-# 🛠 Tech Stack
+↓
 
-## Frontend
+Auto Escalation
 
-- React
-- Vite
-- Axios
-- CSS
+Rule 2
 
-## Backend
+Billing + Angry Customer
 
-- Node.js
-- Express.js
+↓
 
-## AI
+Add Churn Risk Tag
 
-- Google Gemini API
+Rule 3
 
----
+Priority
 
-# 📁 Project Structure
+↓
 
-```
-TriageAI/
+Assign SLA Target
+
+Rule 4
+
+Category
+
+↓
+
+Department Routing
+
+Rule 5
+
+Low AI Confidence
+
+↓
+
+Suggest Customer Clarification
+
+Rule 6
+
+Requires Previous Records
+
+↓
+
+Human Review Required
+
+Confidence capped at 70%
+
+Rule 7
+
+Prompt Injection Detection
+
+↓
+
+Manual Review
+
+Confidence reduced
+
+Rule 8
+
+Multiple Issues Detected
+
+↓
+
+Human Review
+
+🛡 AI Safety
+
+Several safeguards improve reliability:
+
+Input Validation
+AI Response Validation
+Confidence Verification
+Prompt Injection Detection
+Human Escalation
+Business Rule Enforcement
+
+This ensures the system produces explainable and reliable recommendations instead of blindly trusting the LLM.
+
+🔄 Decision Flow
+Customer Message
 │
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   ├── services/
-│   └── App.jsx
+▼
+Validate Input
 │
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── pipeline/
-│   ├── prompts/
-│   ├── routes/
-│   ├── services/
-│   ├── utils/
-│   └── server.js
+▼
+Normalize Text
 │
-└── README.md
-```
+▼
+Generate Prompt
+│
+▼
+Google Gemini
+│
+▼
+Receive JSON
+│
+▼
+Validate Response
+│
+▼
+Apply Business Rules
+│
+▼
+Return Final Report
+📊 Final Output
 
----
+Each request returns:
 
-# 📊 Output
-
-The AI returns:
-
-- Summary
-- Category
-- Sub Category
-- Priority
-- Priority Score
-- Sentiment
-- Confidence
-- Suggested Department
-- SLA Target
-- Estimated Resolution Time
-- Recommended Actions
-- Extracted Entities
-- Tags
-
----
-
-# 🛡 AI Safety
-
-The system includes:
-
-- Prompt Injection Detection
-- Response Validation
-- Business Rule Enforcement
-- Human Escalation
-- Confidence Scoring
-
-These safeguards ensure that AI recommendations remain reliable and explainable.
-
----
-
-# ▶ Installation
-
-## Clone
-
-```bash
-git clone <repository-url>
-```
-
----
-
-## Backend
-
-```bash
-cd backend
-npm install
-```
-
-Create a `.env` file:
-
-```env
-GEMINI_API_KEY=YOUR_API_KEY
-GEMINI_MODEL=gemini-2.0-flash
-PORT=3000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
-```
-
-Run:
-
-```bash
-npm run dev
-```
-
----
-
-## Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
----
-
-# 🌐 API Endpoints
-
-## Analyze Single Message
-
-```
-POST /api/analyze
-```
-
----
-
-## Analyze Bulk Messages
-
-```
-POST /api/analyze/bulk
-```
-
----
-
-## Health Check
-
-```
-GET /health
-```
-
----
-
-# 🎯 Example Use Cases
-
-- Refund Requests
-- Payment Failures
-- Login Issues
-- Shipping Delays
-- Technical Bugs
-- Account Access Problems
-
----
-
-# 👥 Team
-
-Hackathon Submission
-
-Developed using:
-
-- React
-- Express.js
-- Google Gemini
-- Pipe-and-Filter Architecture
-- Business Rule Engine
-
----
-
-# 📄 License
-
-This project was developed for educational and hackathon purposes.
+Summary
+Category
+Sub Category
+Priority
+Priority Score
+Sentiment
+Confidence
+Department
+SLA Target
+Estimated Resolution Time
+Suggested Actions
+Extracted Entities
+Tags
+Human Review Status
