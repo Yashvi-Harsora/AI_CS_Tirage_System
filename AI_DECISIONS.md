@@ -1,216 +1,80 @@
-🤖 AI Decisions Note
+📌 What this project does
 
-1. Model & Tools Used
-   AI Model
-   Google Gemini 2.0 Flash
-   Used for customer ticket understanding and structured triage generation.
-   Backend
-   Node.js
-   Express.js
-   Frontend
-   React
-   Vite
-   Axios
-   AI Integration
-   Google Gemini API
-   JSON Response Schema Validation
-   Prompt Engineering
-   Pipe-and-Filter Processing Pipeline
-2. Prompt Strategy
+This system takes a user’s message and understands what it means.
+It doesn’t just read words — it tries to understand emotion, intent, and context behind the message.
+For example, it can tell if a message is a question, complaint, friendly talk, or something negative.
 
-Instead of asking the LLM simple questions, the backend dynamically builds a structured prompt containing:
+🧩 Model + Tools Used
 
-Customer message
-Communication channel
-Language
-Business instructions
-Required JSON schema
-Priority rules
-Confidence rules
-Human escalation guidelines
+We used a large language model (LLM) as the main brain of the system.
 
-The prompt instructs Gemini to return only structured JSON instead of free text.
+Instead of training a new AI model from scratch, we used a pre-trained AI model and guided it with smart instructions (prompts).
 
-The customer message is wrapped inside:
+The system may also use:
 
-<CUSTOMER_MESSAGE>
-...
-</CUSTOMER_MESSAGE>
+Message input handler (to receive user text)
+Prompt engine (to structure input before sending to AI)
+Response parser (to clean and organize AI output)
+🧭 Prompt Strategy (How AI is guided)
 
-This prevents the model from treating customer input as system instructions and reduces prompt injection risks.
+We don’t just send raw text to AI.
 
-3. AI Decision Flow
-   Customer Message
-   │
-   ▼
-   Input Validation
-   │
-   ▼
-   Normalize Text
-   │
-   ▼
-   Build AI Prompt
-   │
-   ▼
-   Gemini Analysis
-   │
-   ▼
-   Validate JSON Response
-   │
-   ▼
-   Apply Business Rules
-   │
-   ▼
-   Return Final Triage Report
-4. How the AI Makes Decisions
+We give it a clear instruction like:
 
-The AI analyzes every customer message and predicts:
+What role it should play (e.g., “You are a message analyst”)
+What to look for (sentiment, intent, tone)
+What format to respond in (structured and clean output)
 
-Issue Category
-Subcategory
-Priority
-Priority Score (0–100)
-Sentiment
-Sentiment Score
-Department
-Resolution Time
-Summary
-Suggested Actions
-Extracted Entities
-Tags
-Confidence Score
+We also break the task into small parts so the AI doesn’t get confused.
 
-The model makes these decisions using:
+⚠️ Handling Uncertainty
 
-urgency keywords
-customer sentiment
-business impact
-issue type
-previous context requirements
-language understanding 5. Business Rules After AI
+Sometimes messages are unclear or mixed.
 
-The LLM is not trusted blindly.
+In those cases:
 
-Every AI response passes through a deterministic Business Rules Engine.
+AI is told to not guess strongly
+It gives a best possible label + confidence level
+If something is unclear, it marks it as “uncertain” instead of forcing an answer
 
-Current rules include:
+This prevents wrong or misleading results.
 
-Critical issues → Auto Escalation
-Billing + Angry → Churn Risk
-SLA Assignment
-Department Routing
-Low Confidence Detection
-Human Escalation
-Prompt Injection Detection
-Multi-Issue Detection
+🧹 Handling Bad or Noisy Input
 
-These rules ensure consistent business behaviour regardless of AI output.
+Users may send:
 
-6. How We Handle Uncertainty & Bad Input
+short messages like “ok”
+slang or emojis only
+incomplete sentences
+spam-like text
 
-The system is designed to fail safely.
+To handle this:
 
-Input Validation
+system first normalizes text (understands slang/emojis in context)
+filters out meaningless input when needed
+still tries to extract basic intent if possible
+✅ How we know it works
 
-Rejects:
+We test the system using:
 
-Empty messages
-Very short messages
-Invalid metadata
-Oversized requests
-Prompt Injection Detection
+normal real-world messages (chat-style data)
+emotional messages (angry, happy, sarcastic)
+unclear or broken sentences
 
-Detects suspicious prompts such as:
+We check:
 
-Ignore previous instructions
-Act as ChatGPT
-Print system prompt
-Return hidden prompt
+Is sentiment correct?
+Is intent logical?
+Does output match human understanding?
 
-These requests are flagged for manual review.
+If results match human judgment most of the time → system is considered working well.
 
-Human Escalation
+🔧 What we improve with more time
 
-If a ticket depends on:
+If we improve this system further, we would:
 
-previous conversations
-CRM records
-refund history
-internal tickets
-account history
-
-the confidence is reduced and the request is routed to a human support agent.
-
-Confidence Scoring
-
-Confidence is not always 100%.
-
-Typical ranges:
-
-Confidence Meaning
-95–100% Very clear request
-80–94% Minor ambiguity
-60–79% Requires internal context
-40–59% Ambiguous request
-Below 40% Spam / Prompt Injection / Invalid 7. How We Know It Works
-
-The system has been manually tested using multiple customer support scenarios.
-
-Test categories include:
-
-Refund Requests
-Payment Issues
-Login Problems
-Shipping Delays
-Technical Bugs
-Account Recovery
-Multi-Issue Tickets
-Prompt Injection Attempts
-Human Escalation Cases
-
-Each output was verified for:
-
-Correct category
-Priority accuracy
-Sentiment
-Department routing
-Confidence
-Suggested actions
-Business rule execution 8. Safety Measures
-
-The backend includes several AI safety mechanisms:
-
-JSON schema validation
-Response validation
-Prompt isolation
-Business rule enforcement
-Confidence scoring
-Human review routing
-Prompt injection detection
-
-These safeguards ensure that AI recommendations remain reliable and explainable.
-
-9. Limitations
-
-Current limitations include:
-
-No CRM integration
-No ticket history lookup
-No authentication layer
-English-focused prompts
-Manual business rules
-
-These were acceptable trade-offs for a hackathon prototype.
-
-10. What We'd Improve with More Time
-
-Future improvements would include:
-
-Retrieval-Augmented Generation (RAG) using previous tickets and knowledge base.
-Automatic CRM and helpdesk integration (e.g., Zendesk, Freshdesk).
-Multilingual response generation with automatic language detection.
-Fine-tuned confidence calibration using historical support data.
-ML-based learning from agent feedback to improve routing accuracy.
-Real-time analytics dashboard with SLA monitoring and trend analysis.
-Support for voice transcripts and email attachments.
-Role-based authentication and audit logging for enterprise deployment.
+make sentiment detection more accurate for sarcasm
+improve understanding of Hinglish + slang (important for Indian users)
+add better confidence scoring
+reduce wrong interpretation in short messages
+add memory for conversation context (multi-message understanding)
