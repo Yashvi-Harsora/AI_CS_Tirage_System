@@ -15,6 +15,7 @@ The system may also use:
 Message input handler (to receive user text)
 Prompt engine (to structure input before sending to AI)
 Response parser (to clean and organize AI output)
+
 🧭 Prompt Strategy (How AI is guided)
 
 We don’t just send raw text to AI.
